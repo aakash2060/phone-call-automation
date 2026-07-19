@@ -1,0 +1,33 @@
+name: Daily missed call
+
+on:
+  schedule:
+    # Fire at both possible UTC times for 3pm America/Chicago.
+    # 20:00 UTC = 3pm CDT (summer), 21:00 UTC = 3pm CST (winter).
+    # call.py checks the actual local time and only dials on the right one.
+    - cron: "0 20 * * *"
+    - cron: "0 21 * * *"
+  workflow_dispatch: {}  # lets you trigger a test run manually from the Actions tab
+
+jobs:
+  call:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Twilio SDK
+        run: pip install twilio
+
+      - name: Place the call
+        env:
+          TWILIO_SID: ${{ secrets.TWILIO_SID }}
+          TWILIO_TOKEN: ${{ secrets.TWILIO_TOKEN }}
+          BROTHER_NUMBER: ${{ secrets.BROTHER_NUMBER }}
+          GV_NUMBER: ${{ secrets.GV_NUMBER }}
+        run: python call.py
